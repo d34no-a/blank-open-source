@@ -1,0 +1,64 @@
+#!/bin/bash
+
+ddev start
+
+## Need to check whether or not there is already project files, if there is we cannot run the below command
+if [ ! -d app ]; then
+    ## Silly mac
+    if [ -d .idea ]; then
+      echo "Goodbye .idea"
+      rm -rf .idea
+    fi
+
+    ## Cannot install magento if this exists
+    if [ -e composer.json ]; then
+      echo "Goodbye composer.json"
+      rm composer.json
+    fi
+
+    ddev composer create --repository=https://repo.magento.com/ magento/project-community-edition:2.4.7 -y
+fi
+
+## Set file permissions
+ddev exec find var generated vendor pub/static pub/media app/etc -type f -exec chmod g+w {} +
+ddev exec find var generated vendor pub/static pub/media app/etc -type d -exec chmod g+ws {} +
+ddev exec chmod u+x bin/magento
+
+## Fix : "the default website isn't defined. Set the website and try again."
+ddev exec rm -f app/etc/env.php
+
+## Configure Magento
+ddev magento setup:install \
+--base-url='https://blank-open-source.ddev.site/' \
+--backend-frontname=admin \
+--use-rewrites=1 \
+--db-host=db \
+--db-name=db \
+--db-user=db \
+--db-password=db \
+--admin-firstname=Admin \
+--admin-lastname=Admin \
+--admin-email=admin@admin.com \
+--admin-user=admin \
+--admin-password=Password1! \
+--language=en_GB \
+--currency=GBP \
+--timezone=Europe/London \
+--search-engine=opensearch \
+--opensearch-host=blank-open-source.ddev.site \
+--opensearch-port=9200 \
+--opensearch-index-prefix=magento2 \
+--opensearch-timeout=15
+
+## Disable Admin 2FA because it's annoying
+ddev magento module:disable Magento_AdminAdobeImsTwoFactorAuth Magento_TwoFactorAuth
+
+## Set up Magento dev mode and get everything ready
+ddev magento deploy:mode:set developer
+ddev magento s:up
+ddev magento s:di:compile
+ddev magento indexer:reindex
+ddev magento c:fl
+
+## And away we go
+ddev launch

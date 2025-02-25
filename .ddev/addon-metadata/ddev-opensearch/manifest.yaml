@@ -1,0 +1,9 @@
+name: ddev-opensearch
+repository: ddev/ddev-opensearch
+version: 2.1.0
+install_date: "2025-02-24T09:48:08Z"
+project_files:
+    - opensearch
+    - docker-compose.opensearch.yaml
+global_files: []
+removal_actions: []
