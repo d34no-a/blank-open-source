@@ -2,22 +2,7 @@
 
 ddev start
 
-## Need to check whether or not there is already project files, if there is we cannot run the below command
-if [ ! -d app ]; then
-    ## Silly mac
-    if [ -d .idea ]; then
-      echo "Goodbye .idea"
-      rm -rf .idea
-    fi
-
-    ## Cannot install magento if this exists
-    if [ -e composer.json ]; then
-      echo "Goodbye composer.json"
-      rm composer.json
-    fi
-
-    ddev composer create --repository=https://repo.magento.com/ magento/project-community-edition:2.4.7 -y
-fi
+ddev composer install
 
 ## Set file permissions
 ddev exec find var generated vendor pub/static pub/media app/etc -type f -exec chmod g+w {} +
